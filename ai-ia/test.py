@@ -4,9 +4,10 @@ import gymnasium as gym
 import pickle
 
 env = gym.make("Taxi-v3", render_mode="ansi")
-env.reset(seed=10)
+# env.reset(seed=10)
+env.reset()
 
-print(env.render())
+# print(env.render())
 
 def move(steps=0, direction=None): 
     points = 0
@@ -40,5 +41,5 @@ if __name__ == "__main__":
     # print(env.render())
     # print(tuple(env.decode(observation)))
     # print(tuple(env.unwrapped.decode(observation))) # this is used to find out taxi loc, passenger, and dropoff
-    move(steps=2, direction=1)
+    # move(steps=2, direction=1)
     print(env.render())
