@@ -6,8 +6,7 @@ from collections import deque
 env = gym.make("Taxi-v3", render_mode="ansi")
 env.reset(seed=2)
 # env.reset()
-print(env.action_space.n)
-print(env.observation_space.shape())
+# print(env.action_space.n) 
 
 # print(env.render())
 
@@ -99,6 +98,9 @@ if __name__ == "__main__":
     # print(tuple(env.decode(observation)))
     # print(tuple(env.unwrapped.decode(observation))) # this is used to find out taxi loc, passenger, and dropoff
     # move(steps=2, direction=1)
-    print(env.render())
-    testPassenger([0, 3, 0, 0])
+    # print(env.render())
+    # testPassenger([0, 3, 0, 0])
     # dfs(env)
+    # print(env.reset()[0]) 
+    initial_state = env.reset()[0]
+    print(env.P[initial_state])
