@@ -5,102 +5,55 @@ from collections import deque
 
 env = gym.make("Taxi-v3", render_mode="ansi")
 env.reset(seed=2)
-# env.reset()
-# print(env.action_space.n) 
-
-# print(env.render())
-
-def move(steps=0, direction=None): 
-    points = 0
-    directions = [0,1,2,3]
-    if direction not in directions:
-        raise "unknown direction"
-    
-    if steps == 0: 
-        return
-
-    for _ in range(steps):
-        obs, reward, done, moved, info = env.step(direction)
-        print(env.render())
-        points += reward
-        # if done or moved:
-        #     testEnv.reset()
-        if moved:
-            env.reset()
-        if done:
-            env.reset(seed=10)
-    
-    print(f"Total points is {points}")
-
-def testPassenger(movement=[]):
-    totalPoint = 0
-    if len(movement) > 0:
-        for dir in movement: 
-            obs, reward, done, moved, info = env.step(dir)
-            print(env.render())
-            print(tuple(env.unwrapped.decode(obs)))
-            totalPoint += reward
-            print(f"reward is {reward}")
-            print(info)
-            if moved or done: 
-                env.reset()
-    
-    print(f"total point is {totalPoint}")
 
 def dfs(env):
-    # stack = deque()
-    # visited = set()
+    actions = [0, 1, 2, 3, 4, 5]  # Actions: South, North, East, West, Pickup, Dropoff
+    stack = []
+    visited = set()
 
-    # initial_state = env.reset()
-    # stack.append((initial_state, []))
+    initial_state = env.reset()[0]
+    stack.append((initial_state, [], 0, False))  # Add state, path, accumulated reward, and pickup status to the stack
+    visited.add(initial_state)
 
-    # while stack:
-    #     state, path = stack.pop()
+    while stack:
+        state, path, total_reward, picked_up = stack.pop()
+        env.unwrapped.s = state
+        print(env.render())
 
-    #     if state in visited:
-    #         continue
+        for action in actions:
+            env.unwrapped.s = state  # Reset to the current state
+            next_state, reward, done, truncated, info = env.step(action)
+            next_path = path + [action]
+            next_total_reward = total_reward + reward
 
-    #     visited.add(state)
+            if next_state not in visited:
+                next_picked_up = picked_up
+                taxi_row, taxi_col, passenger_loc, destination = tuple(env.unwrapped.decode(next_state))
 
-    #     env.render()
+                # Check if passenger is picked up and update status
+                if action == 4 and passenger_loc != 4:  # Pickup action
+                    if (taxi_row, taxi_col) == env.unwrapped.locs[passenger_loc]:
+                        next_picked_up = True
 
-    #     for action in range(env.action_space.n):
-    #         next_state, reward, done, info = env.step(action)
-    #         env.render()
-    #         if done: 
-    #             print(f"Goal reached with path: {path + [action]}")
-    #             return path + [action]
+                # Check if passenger is dropped off and update status
+                if action == 5 and picked_up:  # Dropoff action
+                    if (taxi_row, taxi_col) == env.unwrapped.locs[destination]:
+                        next_picked_up = False  # Passenger dropped off
+                        done = True  # Goal achieved
+
+                visited.add(next_state)
+                stack.append((next_state, next_path, next_total_reward, next_picked_up))
+
+            if done:
+                print("Goal reached!")
+                print(env.render())
+                print(f"Actions to reach goal: {next_path}")
+                print(f"Total reward: {next_total_reward}")
+                return
+
+    print("All reachable states visited.")
+    print(f"Visited states: {visited}")
             
-    #         stack.append((next_state, path + [action]))
-
-    #         env.reset()
-    #         env.s = state
-
-     visited = set()
-     
-     initial_state = env.reset(seed=2)
-     print(initial_state)
-     print(env.render())
-
-     next_state, reward, done, moved, info = env.step(0)
-     print(next_state)
-     print(env.render())
-
-
 
 if __name__ == "__main__":
-    # print(observation)
-    # print(reward)
-    # print(terminated)
-    # print(truncated)
-    # print(info)
-    # print(env.render())
-    # print(tuple(env.decode(observation)))
-    # print(tuple(env.unwrapped.decode(observation))) # this is used to find out taxi loc, passenger, and dropoff
-    # move(steps=2, direction=1)
-    # print(env.render())
-    # testPassenger([0, 3, 0, 0])
-    # dfs(env)
-    # print(env.reset()[0]) 
-    initial_state = env.reset()[0]
-    print(env.P[initial_state])
+    dfs(env)
