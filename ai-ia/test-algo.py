@@ -7,7 +7,7 @@ from collections import deque
 env = gym.make("Taxi-v3", render_mode="ansi")
 # env.reset(seed=2)
 env.reset() # Reset the environment to its initial state 
-
+        
 def dfs(env):
     """
     Function to perform depth first search to solve the taxi-v3 environment 
@@ -70,7 +70,6 @@ def dfs(env):
     # If all reachable states are visited and goal is not achieved, print the results
     print("All reachable states visited.")
     print(f"Visited states: {visited}")
-            
 
 if __name__ == "__main__":
     dfs(env) # executes the dfs function 
