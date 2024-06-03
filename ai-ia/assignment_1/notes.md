@@ -3,7 +3,7 @@ Things to note before starting ai mod assignment 1
 
 ## Search algorithms to use
 
-- **greedy search**
+- **Breath first search**
 - **A * search**
 - **Uniform-cost search**
 
