@@ -2,6 +2,8 @@
 
 import gymnasium as gym
 from collections import deque
+import numpy as np
+import sys
 
 # Create the Taxi-v3 environment with text rendering mode 
 env = gym.make("Taxi-v3", render_mode="ansi")
@@ -67,9 +69,56 @@ def dfs(env):
                 print(f"Actions to reach goal: {next_path}")
                 print(f"Total reward: {next_total_reward}")
                 return
-    # If all reachable states are visited and goal is not achieved, print the results
-    print("All reachable states visited.")
-    print(f"Visited states: {visited}")
+
+def bfs(env):
+    queue = []
+    visited = [False for _ in range(env.unwrapped.observation_space.n)]
+
+    initial_state = env.reset()[0]
+    queue.append((initial_state, [], 0, False))
+    visited[initial_state] = True
+
+    actions = np.array([0,1,2,3,4,5])
+
+    while queue:
+        state, path, total_reward, picked_up = queue.pop()
+        env.unwrapped.s = state
+        print(env.render())
+
+        # for x in range(6):
+            # env.unwrapped.s = state
+        _, _, _, _, info = env.step(0)
+        filtered_actions = actions[info['action_mask'] == 1]
+
+        for action in filtered_actions:
+            env.unwrapped.s = state
+            next_state, reward, done, move, info = env.step(action)
+
+            next_path = path + [action]
+            new_total_reward = total_reward + reward
+
+            if not visited[next_state]:
+                new_picked_up = picked_up
+                trow, tcol, ploc, dest = tuple(env.unwrapped.decode(next_state))
+
+                if action == 4 and ploc!= 4:
+                    if (trow, tcol) == env.unwrapped.locs[ploc]:
+                        new_picked_up = True
+                
+                if action == 5 and picked_up:
+                    if (trow, tcol) == env.unwrapped.locs[dest]:
+                        new_picked_up = False
+                        done = True
+                
+                visited[next_state] = True
+                queue.append((next_state, next_path, new_total_reward, new_picked_up))
+            
+            if done: 
+                print("Goal reached")
+        
+        print("no solution found")
+
 
 if __name__ == "__main__":
-    dfs(env) # executes the dfs function 
+    # dfs(env) # executes the dfs function 
+    bfs(env)

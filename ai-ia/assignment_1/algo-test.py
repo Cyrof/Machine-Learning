@@ -1,5 +1,6 @@
 import gymnasium as gym
 from copy import deepcopy
+import numpy as np
 
 class algo_test:
     
@@ -12,7 +13,7 @@ class algo_test:
         except Exception as e: 
             raise f"Unknown error or render mode {e}"
 
-        self.actions = action
+        self.actions = np.array(action)
 
     def bfs(self):
         copy_env = deepcopy(self.env)
@@ -32,6 +33,12 @@ class algo_test:
             for action in self.actions:
                 copy_env.unwrapped.s = state
                 next_state, reward, done, move, info = copy_env.step(action)
+
+                # filtered_action = self.actions[info['action_mask']==1]
+
+                # if action not in filtered_action:
+                #     continue
+                
                 next_path = path + [action]
                 new_total_reward = total_reward + reward
 
@@ -40,11 +47,11 @@ class algo_test:
                     trow, tcol, ploc, dest = tuple(copy_env.unwrapped.decode(next_state))
 
                     if action == 4 and ploc != 4:
-                        if (trow, tcol) == env.unwrapped.locs[ploc]:
+                        if (trow, tcol) == copy_env.unwrapped.locs[ploc]:
                             new_picked_up = True
                     
                     if action == 5 and picked_up:
-                        if (trow, tcol) == env.unwrapped.locs[dest]:
+                        if (trow, tcol) == copy_env.unwrapped.locs[dest]:
                             new_picked_up = False
                             done = True
 
@@ -57,14 +64,25 @@ class algo_test:
                     print(f"Actions to reach goal: {next_path}")
                     print(f"Total reward: {total_reward}")
                     return 
-        print("All reachable states visited")
-        print(f"Visited states: {visited}")
 
 
-    def get_env(self):
-        return self.env.unwrapped.s
+    def afs(self):
+        pass
+
+    def ucs(self):
+        pass
+    
+    def test(self):
+        copy_env = deepcopy(self.env)
+        actions = np.array([0,1,2,3,4,5])
+        state, reward, done, move, info = copy_env.step(0)
+        filtered_action = actions[info['action_mask'] == 1]
+        print(info)
+        print(filtered_action)
+        print(copy_env.unwrapped.P[state])
 
 
 if __name__ == "__main__":
     a = algo_test()
     a.bfs()
+    # a.test()
