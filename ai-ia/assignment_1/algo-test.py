@@ -1,6 +1,8 @@
 import gymnasium as gym
 from copy import deepcopy
 import numpy as np
+from collections import deque
+import sys
 
 class algo_test:
     
@@ -20,50 +22,75 @@ class algo_test:
         queue = []
         visited = [False for _ in range(copy_env.unwrapped.observation_space.n)]
 
-
         initial_state = copy_env.reset()[0]
-        queue.append((initial_state, [], 0, False))
+        queue.append((initial_state, [], 0))
         visited[initial_state] = True
 
+        picked_up = False
         while queue:
-            state, path, total_reward, picked_up = queue.pop(0)
+            state, path, reward = queue.pop(0)
             copy_env.unwrapped.s = state
             print(copy_env.render())
-
-            for action in self.actions:
-                copy_env.unwrapped.s = state
+            
+            for action in range(copy_env.unwrapped.action_space.n):
                 next_state, reward, done, move, info = copy_env.step(action)
 
-                # filtered_action = self.actions[info['action_mask']==1]
+                filtered_action = self.actions[info['action_mask']==1]
 
-                # if action not in filtered_action:
-                #     continue
+
+                if next_state != state:
+                    if not visited[next_state]:
+                        print("This is working")
+                        trow, tcol, ploc, dest = copy_env.unwrapped.decode(next_state)
+                        if ploc == 4: 
+                            print("Picked up passenger")
+                            visited = [False for _ in range(copy_env.unwrapped.observation_space.n)]
+                            picked_up == True
+                            sys.exit()
+            print("this is not working")
+
+
+    def bfs2(self):
+        copy_env = deepcopy(self.env)
+        visited = [False for _ in range(copy_env.unwrapped.observation_space.n)]
+
+        initial_state = copy_env.reset()[0]
+        queue = deque([(initial_state, [])])
+        visited[initial_state] = True
+        total_reward = 0
+
+        picked_up = False
+
+
+        while queue:
+            current_state, path = queue.popleft()
+            copy_env.unwrapped.s = current_state
+            copy_env.reset()
+            print(copy_env.render())
+
+            for action in range(copy_env.unwrapped.action_space.n):
+                # copy_env.unwrapped.s = current_state
+                next_state, reward, done, move, info = copy_env.step(action)
+                copy_env.reset(seed=None)
+
+                if next_state != current_state:
+                    if next_state not in visited:
+                        if action == 4 and not picked_up:
+                            visited = [False for _ in range(copy_env.unwrapped.observation_space.n)]
+                            picked_up = True
+                            print("Picked up passenger")
+                            sys.exit()
+
+
+                        visited[next_state] = True
+                        new_path = path + [action]
+                        total_reward += reward
+                        if done: 
+                            print(f"The path is: {new_path}")
+                            print(f"The reward is: {total_reward}")
+                        queue.append((next_state, new_path))
                 
-                next_path = path + [action]
-                new_total_reward = total_reward + reward
-
-                if not visited[next_state]:
-                    new_picked_up = picked_up 
-                    trow, tcol, ploc, dest = tuple(copy_env.unwrapped.decode(next_state))
-
-                    if action == 4 and ploc != 4:
-                        if (trow, tcol) == copy_env.unwrapped.locs[ploc]:
-                            new_picked_up = True
-                    
-                    if action == 5 and picked_up:
-                        if (trow, tcol) == copy_env.unwrapped.locs[dest]:
-                            new_picked_up = False
-                            done = True
-
-                    visited[next_state] = True
-                    queue.append((next_state, next_path, new_total_reward, new_picked_up))
-            
-                if done: 
-                    print("Goal reached!")
-                    print(copy_env.render())
-                    print(f"Actions to reach goal: {next_path}")
-                    print(f"Total reward: {total_reward}")
-                    return 
+        print("No solution found")
 
 
     def afs(self):
@@ -76,13 +103,16 @@ class algo_test:
         copy_env = deepcopy(self.env)
         actions = np.array([0,1,2,3,4,5])
         state, reward, done, move, info = copy_env.step(0)
-        filtered_action = actions[info['action_mask'] == 1]
-        print(info)
-        print(filtered_action)
-        print(copy_env.unwrapped.P[state])
+        # filtered_action = actions[info['action_mask'] == 1]
+        # print(info)
+        # print(filtered_action)
+        # print(copy_env.unwrapped.P[state])
+        print(state)
+        print(copy_env.unwrapped.P[state][4][0][2])
 
 
 if __name__ == "__main__":
     a = algo_test()
     a.bfs()
+    # a.bfs2()
     # a.test()
