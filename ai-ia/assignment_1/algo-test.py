@@ -1,7 +1,6 @@
 # import required libraries for this program
 import gymnasium as gym
 from copy import deepcopy
-import numpy as np
 from collections import deque
 import heapq
 import time
